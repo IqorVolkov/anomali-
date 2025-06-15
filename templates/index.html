@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Typing Speed Test — word by word</title>
+<style>
+    #current-word {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    #input-word {
+        font-size: 18px;
+        padding: 5px;
+    }
+    #timer {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    #error {
+        color: red;
+    }
+</style>
+</head>
+<body>
+    <h1>Typing Speed Test — word by word</h1>
+    <div id="timer">Time left: 60s</div>
+    <div id="current-word"></div>
+    <input type="text" id="input-word" autocomplete="off" autofocus placeholder="Type the word here" />
+    <div id="error"></div>
+
+    <form id="result-form" method="POST" style="display:none;">
+        <input type="hidden" name="typed_words" id="typed_words" />
+        <input type="hidden" name="original_text" value="{{ original_text }}" />
+        <input type="hidden" name="elapsed_seconds" id="elapsed_seconds" />
+    </form>
+    <script>
+    const typingWords = {{ words|tojson }};
+    let currentIndex = 0;
+    let typedWords = [];
+    let timeLeft = 60;
+    let timerInterval = null;
+    let startTime = null;
+
+    const currentWordDiv = document.getElementById("current-word");
+    const inputWord = document.getElementById("input-word");
+    const errorDiv = document.getElementById("error");
+    const timerDiv = document.getElementById("timer");
+    const typedWordsInput = document.getElementById("typed_words");
+    const elapsedSecondsInput = document.getElementById("elapsed_seconds");
+    const resultForm = document.getElementById("result-form");
+
+    function updateTimer() {
+        timeLeft--;
+        timerDiv.textContent = "Time left: " + timeLeft + "s";
+        if (timeLeft <= 0) {
+            finishTest();
+        }
+    }
+
+    function startTimer() {
+        if (!timerInterval) {
+            startTime = new Date();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+    }
+    function showCurrentWord() {
+        if (currentIndex < words.length) {
+            currentWordDiv.textContent = words[currentIndex];
+            inputWord.value = "";
+            inputWord.focus();
+            errorDiv.textContent = "";
+        } else {
+            // Все слова набраны
+            finishTest();
+        }
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+        let now = new Date();
+        let elapsed = (now - startTime) / 1000;
+        elapsedSecondsInput.value = elapsed.toFixed(2);
+        typedWordsInput.value = typedWords.join(" ");
+        resultForm.submit();
+    }
+    inputWord.addEventListener("keydown", function(event) {
+        if (event.key === " " || event.key === "Enter") {
+            event.preventDefault(); // предотвратить добавление пробела в input
+            startTimer();
+
+            let entered = inputWord.value.trim();
+            let currentWord = words[currentIndex];
+
+            if (entered === currentWord) {
+                typedWords.push(entered);
+                currentIndex++;
+                showCurrentWord();
+            } else {
+                errorDiv.textContent = "Неверно! Попробуйте еще раз.";
+                inputWord.select();
+            }
+        }
+    });
+
+    // Инициализация
+    showCurrentWord();
+</script>
+</body>
+</html>
