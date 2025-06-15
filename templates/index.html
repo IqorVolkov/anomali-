@@ -35,7 +35,7 @@
         <input type="hidden" name="elapsed_seconds" id="elapsed_seconds" />
     </form>
     <script>
-    const typingWords = {{ words|tojson }};
+    const words = {{ words|tojson }};
     let currentIndex = 0;
     let typedWords = [];
     let timeLeft = 60;
@@ -86,7 +86,7 @@
     }
     inputWord.addEventListener("keydown", function(event) {
         if (event.key === " " || event.key === "Enter") {
-            event.preventDefault(); // предотвратить добавление пробела в input
+            event.preventDefault();
             startTimer();
 
             let entered = inputWord.value.trim();
